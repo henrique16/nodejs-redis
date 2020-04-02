@@ -1,5 +1,5 @@
-const redis = require("redis")
 const { promisify } = require("util")
+const redis = require("redis")
 
 module.exports = {
     set(key, array) { return set(key, array) },
@@ -10,11 +10,11 @@ module.exports = {
 function set(key, array) {
     return new Promise(async (resolve, reject) => {
         const redisClient = redis.createClient()
-        const setAsync = promisify(redisClient.set).bind(redisClient)
-        const data = JSON.stringify(array)
         try {
+            const setAsync = promisify(redisClient.set).bind(redisClient)
+            const data = JSON.stringify(array)
             await setAsync(key, data)
-            await expire(key)
+            await expire(key, redisClient)
             return resolve("OK")
         }
         catch (err) {
@@ -30,8 +30,8 @@ function set(key, array) {
 function del(key) {
     return new Promise(async (resolve, reject) => {
         const redisClient = redis.createClient()
-        const delAsync = promisify(redisClient.del).bind(redisClient)
         try {
+            const delAsync = promisify(redisClient.del).bind(redisClient)
             await delAsync(key)
             return resolve("OK")
         }
@@ -48,8 +48,8 @@ function del(key) {
 function get(key) {
     return new Promise(async (resolve, reject) => {
         const redisClient = redis.createClient()
-        const getAsync = promisify(redisClient.get).bind(redisClient)
         try {
+            const getAsync = promisify(redisClient.get).bind(redisClient)
             const result = await getAsync(key)
             return resolve(result)
         }
@@ -63,43 +63,35 @@ function get(key) {
     })
 }
 
-function expire(key) {
+function expire(key, redisClient) {
     return new Promise(async (resolve, reject) => {
-        const redisClient = redis.createClient()
-        const expireAsync = promisify(redisClient.expire).bind(redisClient)
         try {
-            const result = await ttl(key)
-            if(result > 0) {
+            const expireAsync = promisify(redisClient.expire).bind(redisClient)
+            const result = await ttl(key, redisClient)
+            if (result > 0) {
                 await expireAsync(key, result)
                 return resolve("OK")
             }
-            await expireAsync(key, 10)
+            await expireAsync(key, 60)
             return resolve("OK")
         }
         catch (err) {
             console.log(err)
             return reject(err)
         }
-        finally {
-            redisClient.quit()
-        }
-    })   
+    })
 }
 
-function ttl(key) {
+function ttl(key, redisClient) {
     return new Promise(async (resolve, reject) => {
-        const redisClient = redis.createClient()
-        const ttlAsync = promisify(redisClient.ttl).bind(redisClient)
         try {
+            const ttlAsync = promisify(redisClient.ttl).bind(redisClient)
             const result = await ttlAsync(key)
             return resolve(result)
         }
         catch (err) {
             console.log(err)
             return reject(err)
-        }
-        finally {
-            redisClient.quit()
         }
     })
 }
