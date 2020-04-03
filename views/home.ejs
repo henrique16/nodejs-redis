@@ -6,6 +6,10 @@
     <title>Document</title>
 </head>
 <body>
-    <%= events %>
+    <script src="socket.io/socket.io.js"></script>
+    <script>
+        const socket = io("/event")
+        socket.emit("test", "HELLO")
+    </script>
 </body>
 </html>

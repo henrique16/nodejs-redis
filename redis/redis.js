@@ -72,7 +72,7 @@ function expire(key, redisClient) {
                 await expireAsync(key, result)
                 return resolve("OK")
             }
-            await expireAsync(key, 60)
+            await expireAsync(key, 30 * 60)
             return resolve("OK")
         }
         catch (err) {
