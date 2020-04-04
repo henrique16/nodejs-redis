@@ -1,6 +1,6 @@
 const schema = require("../schema/event")
 const redis = require("../../redis/redis")
-const redisKeys = { events: "events", eventsByUser: "eventsByUser" }
+const redisKeys = { events: "events" }
 
 module.exports = {
     insert(event) { return insert(event) },
@@ -55,7 +55,7 @@ function get() {
 }
 
 function getByUser(idUser) {
-    const key = `${redisKeys.eventsByUser}${idUser}`
+    const key = `${redisKeys.events}${idUser}`
     return redis.get(key).then(eventsByUserCache => {
         if (eventsByUserCache) {
             const eventsByUserCacheJson = JSON.parse(eventsByUserCache)

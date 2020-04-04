@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="eventsByUser">
+        <%
+            if(eventsByUser.length > 0) { 
+                eventsByUser.forEach(eventByUser => { %>
+                    <%- include("../component/eventByUser.ejs", { eventByUser: eventByUser }) %>
+        <%      }) 
+            } 
+        %>
+    </div>
+    <div id="events">
+        <% 
+            if(events.length > 0) {
+                events.forEach(event => { %>
+                   <%- include("../component/event.ejs", { event: event }) %>
+        <%      })
+            } 
+        %>
+    </div>
+    <%- include("script.ejs") %>
+</body>
+
+</html>
