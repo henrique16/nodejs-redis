@@ -32,7 +32,8 @@ function del(key) {
         const redisClient = redis.createClient()
         try {
             const delAsync = promisify(redisClient.del).bind(redisClient)
-            await delAsync(key)
+            const result = await delAsync(key)
+            if(!result) return new Error("key not found")
             return resolve("OK")
         }
         catch (err) {

@@ -4,70 +4,103 @@ const redisKeys = { events: "events" }
 
 module.exports = {
     insert(event) { return insert(event) },
+    del(event) { return del(event) },
     get() { return get() },
-    getByUser(idUser) { return getByUser(idUser) },
-    del(_id) { return del(_id) }
+    getByUser(idUser) { return getByUser(idUser) }
 }
 
-function insert(event) {
-    return schema.insert(event).then(insertedEvent => {
+async function insert(event) {
+    try {
+        const insertedEvent = await schema.insert(event)
         console.log(`INSERTED EVENT _id: ${insertedEvent._id}`)
-        redis.get(redisKeys.events).then(eventsCache => {
-            if (eventsCache) {
-                const eventsCacheJson = JSON.parse(eventsCache)
-                eventsCacheJson.push(insertedEvent)
-                redis.set(redisKeys.events, eventsCacheJson).then(() => console.log("REDIS - UPDATED EVETNS CACHE"))
-            }
-        })
+        await insertInArrayCache(redisKeys.events, insertedEvent)
+        await insertInArrayCache(`${redisKeys.events}${insertedEvent.idUser}`, insertedEvent)
         return insertedEvent
-    })
+    }
+    finally { }
 }
 
-function del(_id) {
-    return schema.del(_id).then(() => {
-        console.log(`_id: ${_id} DELETED`)
-        redis.get(redisKeys.events).then(eventsCache => {
-            if (eventsCache) {
-                const eventsCacheJson = JSON.parse(eventsCache)
-                const index = eventsCacheJson.findIndex(event => event._id === _id)
-                eventsCacheJson.splice(index, 1)
-                if(eventsCacheJson.length > 0) {
-                    redis.set(redisKeys.events, eventsCacheJson).then(() => console.log("REDIS - UPDATED EVETNS CACHE"))
-                }
-            }
-        })
-    })
+async function del(event) {
+    try {
+        const deletedCount = await schema.del(event._id)
+        if (deletedCount > 0) {
+            console.log(`_id: ${event._id} DELETED`)
+            await deleteInArrayCache(redisKeys.events, event._id)
+            await deleteInArrayCache(`${redisKeys.events}${event.idUser}`, event._id)
+        }
+        else console.log(`_id: ${event._id} NOT EXIST`)
+    }
+    finally { }
 }
 
-function get() {
-    return redis.get(redisKeys.events).then(eventsCache => {
+async function get() {
+    try {
+        const eventsCache = await getArrayCache(redisKeys.events)
         if (eventsCache) {
             console.log("REDIS - GOT EVENTS CACHE")
-            const eventsCacheJson = JSON.parse(eventsCache)
-            return eventsCacheJson
+            return eventsCache
         }
-        return schema.get().then(events => {
-            redis.set(redisKeys.events, events).then(() => console.log("REDIS - INSERTED EVENTS CACHE"))
-            console.log("GOT EVENTS")
-            return events
-        })
-    })
+        const events = await schema.get()
+        console.log("GOT EVENTS")
+        await redis.set(redisKeys.events, events)
+        console.log("REDIS - INSERTED EVENTS CACHE")
+        return events
+    }
+    finally { }
 }
 
-function getByUser(idUser) {
+async function getByUser(idUser) {
     const key = `${redisKeys.events}${idUser}`
-    return redis.get(key).then(eventsByUserCache => {
+    try {
+        const eventsByUserCache = await getArrayCache(key)
         if (eventsByUserCache) {
-            const eventsByUserCacheJson = JSON.parse(eventsByUserCache)
             console.log(`REDIS - GOT USER ${idUser} EVENT AT CACHE`)
-            return eventsByUserCacheJson
+            return eventsByUserCache
         }
-        return schema.getByUser(idUser).then(eventsByUser => {
-            console.log(`GOT USER ${idUser} EVENT`)
-            redis.set(key, eventsByUser).then(() => {
-                console.log(`REDIS - USER EVENT ${idUser} INSERTED IN CACHE`)
-            })
-            return eventsByUser
-        })
-    })
+        const eventsByUser = await schema.getByUser(idUser)
+        console.log(`GOT USER ${idUser} EVENT`)
+        await redis.set(key, eventsByUser)
+        console.log(`REDIS - USER EVENT ${idUser} INSERTED IN CACHE`)
+        return eventsByUser
+    }
+    finally { }
+}
+
+async function getArrayCache(key) {
+    try {
+        const cache = await redis.get(key)
+        if (cache) {
+            const arrayCache = JSON.parse(cache)
+            return arrayCache
+        }
+        return null
+    }
+    finally {}
+}
+
+async function insertInArrayCache(key, event) {
+    try {
+        const arrayCache = await getArrayCache(key)
+        if (arrayCache) {
+            arrayCache.push(event)
+            await redis.set(key, arrayCache)
+            console.log(`REDIS - INSERTED IN ${key}`)
+        }
+        else console.log(`NOT ${key}`)
+    }
+    finally { }
+}
+
+async function deleteInArrayCache(key, _id) {
+    try {
+        const arrayCache = await getArrayCache(key)
+        if (arrayCache) {
+            const index = arrayCache.findIndex(obj => obj._id === _id)
+            arrayCache.splice(index, 1)
+            await redis.set(key, arrayCache)
+            console.log(`REDIS - DELETED IN ${key}`)
+        }
+        else console.log(`NOT ${key}`)
+    }
+    finally {}
 }

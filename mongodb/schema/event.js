@@ -5,14 +5,6 @@ const schema = {
     idPlace: -1,
     eventName: "",
     description: "",
-    activeOrDeleted: false,
-    createdAt: new Date(),
-    updateAt: new Date(),
-    secretKey: "",
-    isMeeting: false,
-    isLive: false,
-    isTest: false,
-    isBeta: false
 }
 
 module.exports = {
@@ -27,14 +19,13 @@ function insert(event) {
         try {
             const mongoClient = await connector
             const collection = mongoClient.db("base").collection("event")
-            const result = await collection.insert(event)
+            const result = await collection.insertOne(event)
             const insertedEvent = result.ops[0]
-            mongoClient.close()
             return resolve(insertedEvent)
         }
         catch (err) {
             console.log(err)
-            reject(err)
+            return reject(err)
         }
     })
 }
@@ -44,13 +35,13 @@ function del(_id) {
         try {
             const mongoClient = await connector
             const collection = mongoClient.db("base").collection("event")
-            await collection.deleteOne({ _id: new mongodb.ObjectID(_id) })
-            mongoClient.close()
-            return resolve()
+            const result = await collection.deleteOne({ _id: new mongodb.ObjectID(_id) })
+            const deletedCount = result.deletedCount
+            return resolve(deletedCount)
         }
         catch (err) {
             console.log(err)
-            reject(err)
+            return reject(err)
         }
     })
 }
@@ -61,12 +52,11 @@ function get() {
             const mongoClient = await connector
             const collection = mongoClient.db("base").collection("event")
             const events = await collection.find().limit(100).toArray()
-            mongoClient.close()
             return resolve(events)
         }
         catch (err) {
             console.log(err)
-            reject(err)
+            return reject(err)
         }
     })
 }
@@ -77,7 +67,6 @@ function getByUser(idUser) {
             const mongoClient = await connector
             const collection = mongoClient.db("base").collection("event")
             const eventsByUser = await collection.find({idUser: idUser}).toArray()
-            mongoClient.close()
             return resolve(eventsByUser)
         }
         catch (error) {
