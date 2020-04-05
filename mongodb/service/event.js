@@ -3,15 +3,16 @@ const redis = require("../../redis/redis")
 const redisKeys = { events: "events" }
 
 module.exports = {
-    insert(event) { return insert(event) },
+    insertOne(event) { return insertOne(event) },
+    // insertMany(events) { return insertMany(events) },
     del(event) { return del(event) },
     get() { return get() },
     getByUser(idUser) { return getByUser(idUser) }
 }
 
-async function insert(event) {
+async function insertOne(event) {
     try {
-        const insertedEvent = await schema.insert(event)
+        const insertedEvent = await schema.insertOne(event)
         console.log(`INSERTED EVENT _id: ${insertedEvent._id}`)
         await insertInArrayCache(redisKeys.events, insertedEvent)
         await insertInArrayCache(`${redisKeys.events}${insertedEvent.idUser}`, insertedEvent)
@@ -19,6 +20,21 @@ async function insert(event) {
     }
     finally { }
 }
+
+// async function insertMany(events) {
+//     try {
+//         const insertedEvents = await schema.insertMany(events)
+//         insertedEvents.forEach(async event => {
+//             var keyExist = false
+//             keyExist = await insertInArrayCache(redisKeys.events, event)
+//             keyExist = await insertInArrayCache(`${redisKeys.events}${event.idUser}`, event)
+//             console.log(keyExist)
+//             if (!keyExist) return
+//         });
+//         return insertedEvents
+//     }
+//     finally { }
+// }
 
 async function del(event) {
     try {
@@ -85,8 +101,12 @@ async function insertInArrayCache(key, event) {
             arrayCache.push(event)
             await redis.set(key, arrayCache)
             console.log(`REDIS - INSERTED IN ${key}`)
+            return true
         }
-        else console.log(`NOT ${key}`)
+        else {
+            console.log(`NOT ${key}`)
+            return false
+        }
     }
     finally { }
 }

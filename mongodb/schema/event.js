@@ -8,13 +8,14 @@ const schema = {
 }
 
 module.exports = {
-    insert(event) { return insert(event) },
+    insertOne(event) { return insertOne(event) },
+    // insertMany(events) { return insertMany(events) },
     get() { return get() },
     getByUser(idUser) { return getByUser(idUser) },
     del(_id) { return del(_id) }
 }
 
-function insert(event) {
+function insertOne(event) {
     return new Promise(async (resolve, reject) => {
         try {
             const mongoClient = await connector
@@ -29,6 +30,22 @@ function insert(event) {
         }
     })
 }
+
+// function insertMany(events) {
+//     return new Promise(async (resolve, reject) => {
+//         try {
+//             const mongoClient = await connector
+//             const collection = mongoClient.db("base").collection("event")
+//             const result = await collection.insertMany(events)
+//             const insertedEvent = result.ops
+//             return resolve(insertedEvent)
+//         }
+//         catch (err) {
+//             console.log(err)
+//             return reject(err)
+//         }
+//     })
+// }
 
 function del(_id) {
     return new Promise(async (resolve, reject) => {
