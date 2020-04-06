@@ -1,4 +1,9 @@
 {
+    "server": {
+        "host": null,
+        "port": null,
+        "href": null
+    },
     "mongodb": {
         "uri": null
     }
