@@ -64,14 +64,14 @@ function renderCreateEvent() {
 
 function newEventByUser(event) {
     const eventsByUser = document.getElementById("eventsByUser")
-    if(eventsByUser) {
+    if (eventsByUser) {
         eventsByUser.appendChild(component.eventByUser(event))
     }
 }
 
 function newEvent(event) {
     const events = document.getElementById("events")
-    if(events) {
+    if (events) {
         events.appendChild(component.event(event))
     }
 }
@@ -80,14 +80,31 @@ async function insertEvent() {
     const event = {}
     const nodeArray = document.getElementsByClassName("insert")
     const insertArray = Array.apply(null, nodeArray)
-    insertArray.forEach(element => {
+    for (let index = 0; index < insertArray.length; index++) {
+        const element = insertArray[index];
         event[element.id] = element.value
-    });
+    }
     try {
         await fetch("/insertEvent", {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(event)
+        })
+    }
+    catch (err) {
+        alert("Try later")
+    }
+}
+
+async function del(event) {
+    const element = event.target
+    const _id = element.getAttribute("_id")
+    const idUser = element.getAttribute("idUser")
+    try {
+        await fetch("/deleteEvent", {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ _id: _id, idUser: idUser })
         })
     }
     catch (err) {

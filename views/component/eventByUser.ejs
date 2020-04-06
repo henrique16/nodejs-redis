@@ -3,4 +3,11 @@
     <span><%= eventByUser.idPlace %></span>
     <span><%= eventByUser.eventName %></span>
     <span><%= eventByUser.description %></span>
+    <input 
+        id="delete<%= eventByUser._id %>"
+        _id="<%= eventByUser._id %>"
+        idUser="<%= eventByUser.idUser %>"
+        type="submit" 
+        value="Delete" 
+        onclick="del(event)">
 </div>

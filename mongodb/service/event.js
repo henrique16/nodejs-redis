@@ -4,8 +4,7 @@ const redisKeys = { events: "events" }
 
 module.exports = {
     insertOne(event) { return insertOne(event) },
-    // insertMany(events) { return insertMany(events) },
-    del(event) { return del(event) },
+    del({ _id, idUser }) { return del({ _id, idUser }) },
     get() { return get() },
     getByUser(idUser) { return getByUser(idUser) }
 }
@@ -21,30 +20,18 @@ async function insertOne(event) {
     finally { }
 }
 
-// async function insertMany(events) {
-//     try {
-//         const insertedEvents = await schema.insertMany(events)
-//         insertedEvents.forEach(async event => {
-//             var keyExist = false
-//             keyExist = await insertInArrayCache(redisKeys.events, event)
-//             keyExist = await insertInArrayCache(`${redisKeys.events}${event.idUser}`, event)
-//             console.log(keyExist)
-//             if (!keyExist) return
-//         });
-//         return insertedEvents
-//     }
-//     finally { }
-// }
-
-async function del(event) {
+async function del({ _id, idUser }) {
     try {
-        const deletedCount = await schema.del(event._id)
+        const deletedCount = await schema.del(_id)
         if (deletedCount > 0) {
-            console.log(`_id: ${event._id} DELETED`)
-            await deleteInArrayCache(redisKeys.events, event._id)
-            await deleteInArrayCache(`${redisKeys.events}${event.idUser}`, event._id)
+            console.log(`_id: ${_id} DELETED`)
+            await deleteInArrayCache(redisKeys.events, _id)
+            await deleteInArrayCache(`${redisKeys.events}${idUser}`, _id)
         }
-        else console.log(`_id: ${event._id} NOT EXIST`)
+        else {
+            console.log(`_id: ${_id} NOT EXIST`)
+            new Error(`_id: ${_id} NOT EXIST`)
+        }
     }
     finally { }
 }
