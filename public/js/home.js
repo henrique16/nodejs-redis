@@ -1,6 +1,6 @@
 window.onload = function () {
-    var socket = io.connect('http://localhost:5890');
-    socket.emit('test', { my: 'data' })
+    socket = io.connect('http://localhost:5890')
+    socket.on("newEvent", event => newEvent(event))
 }
 
 const modal = {
@@ -25,15 +25,37 @@ const modal = {
     )
 }
 
+const component = {
+    event(event) {
+        const div = document.createElement("div")
+        div.id = `event${event._id}`
+        const html = (
+            `<span>${event.idUser}</span>
+             <span>${event.idPlace}</span>
+             <span>${event.eventName}</span>
+             <span>${event.description}</span>`
+        )
+        div.innerHTML = html
+        return div
+    }
+}
+
 function renderCreateEvent() {
-    const createElement = document.getElementById("createEvent")
-    if(createElement) {
-        createElement.remove()
+    const createEvent = document.getElementById("createEvent")
+    if (createEvent) {
+        createEvent.remove()
         return
     }
     const div = document.createElement("div")
     div.innerHTML = modal.createEvent
     document.body.appendChild(div)
+}
+
+function newEvent(event) {
+    const events = document.getElementById("events")
+    if(events) {
+        events.appendChild(component.event(event))
+    }
 }
 
 async function insertEvent() {
@@ -43,12 +65,14 @@ async function insertEvent() {
     insertArray.forEach(element => {
         event[element.id] = element.value
     });
-    const response = await fetch("/event/insert", {
-        method: "POST",
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(event)
-    })
-    const insertedEvent = await response.json()
+    try {
+        await fetch("/event/insert", {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(event)
+        })
+    }
+    catch (err) {
+        alert("Try later")
+    }
 }
