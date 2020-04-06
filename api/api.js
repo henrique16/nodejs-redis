@@ -1,5 +1,5 @@
-const event = require("./event/event")
+const root = require("./root/root")
 
 module.exports = function (app, io) {
-    event(app, io)
+    root(app, io)
 }

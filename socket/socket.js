@@ -1,7 +1,7 @@
+// const sockeio = require("socket.io")
+// const io = sockeio()
+const root = require("./root/root")
+
 module.exports = function (io) {
-    io.on("connection", socket => {
-        console.log("connect socket")
-        
-        socket.on("disconnect", () => console.log("disconnect socket"))
-    })
+    root(io)
 }
