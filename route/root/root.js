@@ -10,8 +10,6 @@ module.exports = function (app1, io) {
             next()
         }
         catch (err) {
-            req.
-            console.log(req.headers["access-control-allow-origin"])
             res.redirect("/register")
         }
     })
