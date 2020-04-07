@@ -1,3 +1,5 @@
+const socket = io.connect('http://localhost:5890')
+
 async function login() {
     const body = {}
     body.user = document.getElementById("user").value
