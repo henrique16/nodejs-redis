@@ -6,7 +6,7 @@ module.exports = function (app, io) {
             const event = req.body
             const insertedEvent = await eventService.insertOne(event)
 
-            // issue only to the user
+            //#region issue only to the user
             const connected = io.sockets.connected
             const keys = Object.keys(connected)
             for (let index = 0; index < keys.length; index++) {
@@ -16,7 +16,7 @@ module.exports = function (app, io) {
                     io.to(`${socketId}`).emit("newEventByUser", insertedEvent)
                 }
             }
-            //
+            //#endregion
 
             io.emit("newEvent", insertedEvent)
             res.status(200).send("OK")
@@ -31,7 +31,7 @@ module.exports = function (app, io) {
             const { _id, idUser } = req.body
             await eventService.del({ _id: _id, idUser: idUser })
 
-            // issue only to the user
+            //#region issue only to the user
             const connected = io.sockets.connected
             const keys = Object.keys(connected)
             for (let index = 0; index < keys.length; index++) {
@@ -41,7 +41,7 @@ module.exports = function (app, io) {
                     io.to(`${socketId}`).emit("deletedEventByUser", _id)
                 }
             }
-            //
+            //#endregion
             
             io.emit("deletedEvent", _id)
             res.status(200).send("OK")
