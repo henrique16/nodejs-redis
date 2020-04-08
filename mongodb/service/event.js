@@ -1,6 +1,6 @@
 const schema = require("../schema/event")
 const redis = require("../../redis/redis")
-const redisKeys = { events: "events" }
+const redisKeys = { event: "event", events: "events" }
 
 module.exports = {
     insertOne(event) { return insertOne(event) },
@@ -23,15 +23,10 @@ async function insertOne(event) {
 async function del({ _id, idUser }) {
     try {
         const deletedCount = await schema.del(_id)
-        if (deletedCount > 0) {
-            console.log(`_id: ${_id} DELETED`)
-            await deleteInArrayCache(redisKeys.events, _id)
-            await deleteInArrayCache(`${redisKeys.events}${idUser}`, _id)
-        }
-        else {
-            console.log(`_id: ${_id} NOT EXIST`)
-            new Error(`_id: ${_id} NOT EXIST`)
-        }
+        console.log(`_id: ${_id} DELETED`)
+        await deleteInArrayCache(redisKeys.events, _id)
+        await deleteInArrayCache(`${redisKeys.events}${idUser}`, _id)
+        return deletedCount
     }
     finally { }
 }
@@ -46,7 +41,7 @@ async function get() {
         const events = await schema.get()
         console.log("GOT EVENTS")
         await redis.set(redisKeys.events, events)
-        console.log("REDIS - INSERTED EVENTS CACHE")
+        console.log("REDIS - INSERTED EVENTS IN CACHE")
         return events
     }
     finally { }
@@ -78,7 +73,7 @@ async function getArrayCache(key) {
         }
         return null
     }
-    finally {}
+    finally { }
 }
 
 async function insertInArrayCache(key, event) {
@@ -88,12 +83,8 @@ async function insertInArrayCache(key, event) {
             arrayCache.push(event)
             await redis.set(key, arrayCache)
             console.log(`REDIS - INSERTED IN ${key}`)
-            return true
         }
-        else {
-            console.log(`NOT ${key}`)
-            return false
-        }
+        else console.log(`NOT ${key}`)
     }
     finally { }
 }
@@ -102,12 +93,12 @@ async function deleteInArrayCache(key, _id) {
     try {
         const arrayCache = await getArrayCache(key)
         if (arrayCache) {
-            const index = arrayCache.findIndex(obj => obj._id === _id)
+            const index = arrayCache.findIndex(obj => obj._id.toString() === _id.toString())
             arrayCache.splice(index, 1)
             await redis.set(key, arrayCache)
             console.log(`REDIS - DELETED IN ${key}`)
         }
         else console.log(`NOT ${key}`)
     }
-    finally {}
+    finally { }
 }

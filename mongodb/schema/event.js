@@ -37,6 +37,7 @@ function del(_id) {
             const collection = mongoClient.db("base").collection("event")
             const result = await collection.deleteOne({ _id: new mongodb.ObjectID(_id) })
             const deletedCount = result.deletedCount
+            if (!deletedCount) return new Error(`_id: ${_id} NOT EXIST`)
             return resolve(deletedCount)
         }
         catch (err) {
