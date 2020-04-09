@@ -17,11 +17,3 @@ socket(io)
 route(app, io)
 const server = app.listen(config.server.port, () => console.log(config.server.href))
 io.listen(server)
-
-const schema = {
-    _id: "5e8dfc251aa61026f41958a4",
-    token: "OK"
-}
-const a = require("./mongodb/service/user")
-a.getById("5e8dfc251aa61026f41958a4").then(r => console.log(r))
-.catch(e => console.log(e))

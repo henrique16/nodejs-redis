@@ -1,10 +1,10 @@
 const connector = require("../connector")
 const mongodb = require("mongodb")
 const schema = {
-    idUser: -1,
-    idPlace: -1,
-    eventName: "",
-    description: "",
+    idUser: null,
+    idPlace: null,
+    eventName: null,
+    description: null
 }
 
 module.exports = {

@@ -9,6 +9,10 @@ module.exports = {
     getByUser(idUser) { return getByUser(idUser) }
 }
 
+/**
+ * @param {*} event  { idUser: null, idPlace: null, eventName: null, description: null }
+ */
+// Insert in mongodb and if there is cache, update the cache
 async function insertOne(event) {
     try {
         const insertedEvent = await schema.insertOne(event)
@@ -20,6 +24,7 @@ async function insertOne(event) {
     finally { }
 }
 
+// Delete event on mongodb and if there is cache, update the cache
 async function del({ _id, idUser }) {
     try {
         const deletedCount = await schema.del(_id)
@@ -31,6 +36,8 @@ async function del({ _id, idUser }) {
     finally { }
 }
 
+ // 1- Tries to get all events in the cache, if it exists in the cache, retrieves the events
+ // 2- If the events are not in the cache, get all the events from mongodb and insert them in the cache
 async function get() {
     try {
         const eventsCache = await getArrayCache(redisKeys.events)
@@ -47,6 +54,8 @@ async function get() {
     finally { }
 }
 
+// 1- Tries to get user events in the cache, if it exists in the cache, retrieves the user events
+// 2- If the user events are not in the cache, get the user events from mongodb and insert them in the cache
 async function getByUser(idUser) {
     const key = `${redisKeys.events}${idUser}`
     try {
@@ -64,6 +73,10 @@ async function getByUser(idUser) {
     finally { }
 }
 
+/**
+ * @param {*} key key in redis
+ */
+// Get events in redis from the key
 async function getArrayCache(key) {
     try {
         const cache = await redis.get(key)
@@ -76,6 +89,11 @@ async function getArrayCache(key) {
     finally { }
 }
 
+/**
+ * @param {*} key key in redis
+ * @param {*} event { idUser: null, idPlace: null, eventName: null, description: null }
+ */
+// Try to get the key in the redis, if it exists, insert the new event in the redis array
 async function insertInArrayCache(key, event) {
     try {
         const arrayCache = await getArrayCache(key)
@@ -89,6 +107,11 @@ async function insertInArrayCache(key, event) {
     finally { }
 }
 
+/**
+ * @param {*} key key in redis
+ * @param {*} _id mongodb event key
+ */
+// Try to get the key in the redis, if it exists, delete the event in the redis array
 async function deleteInArrayCache(key, _id) {
     try {
         const arrayCache = await getArrayCache(key)
