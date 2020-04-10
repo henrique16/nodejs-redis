@@ -1,4 +1,4 @@
-const eventService = require("../../mongodb/service/event")
+const eventService = require("../../database/mongodb/service/event")
 
 module.exports = function (app, io) {
     app.post("/insertEvent", async (req, res, next) => {
@@ -11,8 +11,8 @@ module.exports = function (app, io) {
             const keys = Object.keys(connected)
             for (let index = 0; index < keys.length; index++) {
                 const socketId = keys[index]
-                const idUser = connected[socketId].idUser
-                if (idUser === insertedEvent.idUser) {
+                const _id = connected[socketId]._id
+                if (_id.toString() === insertedEvent._id.toString()) {
                     io.to(`${socketId}`).emit("newEventByUser", insertedEvent)
                 }
             }
@@ -36,8 +36,8 @@ module.exports = function (app, io) {
             const keys = Object.keys(connected)
             for (let index = 0; index < keys.length; index++) {
                 const socketId = keys[index]
-                const auxIdUser = connected[socketId].idUser
-                if (auxIdUser === idUser) {
+                const _idInSocket = connected[socketId]._id
+                if (_idInSocket.toString() === _id.toString()) {
                     io.to(`${socketId}`).emit("deletedEventByUser", _id)
                 }
             }

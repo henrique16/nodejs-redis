@@ -8,28 +8,26 @@
 </head>
 
 <body>
+    <% if (eventsByUser.length > 0) { %>
     <h2>Event By User <%= eventsByUser[0].idUser %></h2>
     <div id="eventsByUser">
-        <%
-            if(eventsByUser.length > 0) {
-                for (let index = 0; index < eventsByUser.length; index++) {
-                    const eventByUser = eventsByUser[index] %>
-                    <%- include("../component/eventByUser.ejs", { eventByUser: eventByUser }) %>
-        <%      }
-            } 
-        %>
+        <% for (let index = 0; index < eventsByUser.length; index++) { %>
+        <% const eventByUser = eventsByUser[index] %>
+        <%- include("../component/eventByUser.ejs", { eventByUser: eventByUser }) %>
+        <% } %>
     </div>
+    <% } %>
+
+    <% if(events.length > 0) { %>
     <h2>Event</h2>
     <div id="events">
-        <% 
-            if(events.length > 0) {
-                for (let index = 0; index < events.length; index++) {
-                    const event = events[index] %>
-                    <%- include("../component/event.ejs", { event: event }) %>
-        <%      }
-            } 
-        %>
+        <% for (let index = 0; index < events.length; index++) { %>
+        <% const event = events[index] %>
+        <%- include("../component/event.ejs", { event: event }) %>
+        <% } %>
     </div>
+    <% } %>
+
     <div>
         <input id="renderCreateEvent" type="submit" value="Create event" onclick="renderCreateEvent()">
         <input type="submit" value="set id user" onclick="setIdUser()">

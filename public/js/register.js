@@ -2,7 +2,7 @@ const socket = io.connect('http://localhost:5890')
 
 async function login() {
     const body = {}
-    body.user = document.getElementById("user").value
+    body.acess = document.getElementById("acess").value
     body.password = document.getElementById("password").value
     try {
         await fetch("/register/login", { 
