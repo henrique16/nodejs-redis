@@ -5,13 +5,16 @@ async function login() {
     body.acess = document.getElementById("acess").value
     body.password = document.getElementById("password").value
     try {
-        await fetch("/register/login", { 
-            method: "POST", 
+        const response = await fetch("/register/login", {
+            method: "POST",
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body) 
+            body: JSON.stringify(body)
         })
+        const result = await response.json()
+        if (response.status !== 200) return alert(result.error)
+        window.location.href = result.urlRedirect
     }
     catch (err) {
-        alert(err)
+        console.log(err)
     }
 }

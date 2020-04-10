@@ -10,19 +10,23 @@ module.exports = function (app, io) {
             const password = req.body.password
             const urlRedirect = req.cookies.urlRedirect
             const user = await userService.getByAcess(acess)
-            if (acess.toString() !== user.acess.toString()) {
-                res.status(500).send("invalid user")
+            if (!user) { 
+                console.log("Invalid acess")
+                return res.status(403).send({ error: "Invalid acess" })
             }
             if (user.password.toString() !== password.toString()) {
-                res.status(500).send("invalid password")
+                console.log("Invalid password")
+                return res.status(403).send({ error: "Invalid password" })
             }
             const token = jsonwebtoken.sign({ _id: user._id }, "secret", { expiresIn: 30 })
             await userService.updateOne({ _id: user._id, token: token })
             res.clearCookie("urlRedirect")
                 .cookie("_id", 123)
-                .redirect(urlRedirect)
+                .status(200)
+                .send({ urlRedirect: urlRedirect })
         }
         catch (err) {
+            console.log(err)
             res.status(500).send(err)
         }
     })

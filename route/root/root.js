@@ -9,7 +9,10 @@ module.exports = function (app, io) {
         try {
             // jsonwebtoken.verify(token, "secret")
             const _id = req.cookies._id || ""
-            if (_id !== 123) res.cookie("urlRedirect", `${req.url}`).redirect("/register")
+            console.log(_id)
+            if (_id.toString() !== "123") {
+                return res.cookie("urlRedirect", `${req.url}`).redirect("/register")
+            }
             next()
         }
         catch (err) {
