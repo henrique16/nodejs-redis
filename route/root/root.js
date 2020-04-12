@@ -1,22 +1,27 @@
-const jsonwebtoken = require("jsonwebtoken")
 const eventService = require("../../database/mongodb/service/event")
+const cryptoJs = require("crypto-js")
+const userService = require("../../database/mongodb/service/user")
+const jsonwebtoken = require("jsonwebtoken")
 
 const app = require("express")()
 const io = require("socket.io")()
 
 module.exports = function (app, io) {
-    app.use((req, res, next) => {
+    this.idUser = null
+    app.use(async (req, res, next) => {
         try {
-            // jsonwebtoken.verify(token, "secret")
-            const _id = req.cookies._id || ""
-            console.log(_id)
-            if (_id.toString() !== "123") {
-                return res.cookie("urlRedirect", `${req.url}`).redirect("/register")
-            }
+            const _idCipher = req.cookies._idCipher || null
+            if (!_idCipher) throw new Error("is not authenticated")
+            const bytes = cryptoJs.AES.decrypt(_idCipher, process.env.SECRET)
+            const _id = bytes.toString(cryptoJs.enc.Utf8)
+            const user = await userService.getById(_id)
+            const token = user.token
+            jsonwebtoken.verify(token, process.env.SECRET)
             next()
         }
         catch (err) {
-            res.cookie("urlRedirect", `${req.url}`).redirect("/register")
+            console.log(err)
+            res.cookie("urlRedirect", "/").redirect("/register")
         }
     })
     app.get("/", async (req, res, next) => {
@@ -26,6 +31,7 @@ module.exports = function (app, io) {
             res.status(200).render("root/root.ejs", { eventsByUser: eventsByUser, events: events })
         }
         catch (err) {
+            console.log(err)
             res.status(500).send("Try later")
         }
     })

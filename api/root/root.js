@@ -19,7 +19,7 @@ module.exports = function (app, io) {
             //#endregion
 
             io.emit("newEvent", insertedEvent)
-            res.status(200).send("OK")
+            res.status(200)
         }
         catch (err) {
             console.log(err)
@@ -45,7 +45,7 @@ module.exports = function (app, io) {
             //#endregion
             
             io.emit("deletedEvent", _id)
-            res.status(200).send("OK")
+            res.status(200)
         }
         catch (err) {
             console.log(err)

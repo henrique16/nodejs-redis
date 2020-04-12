@@ -1,9 +1,10 @@
 const socket = io.connect('http://localhost:5890')
 
 async function login() {
-    const body = {}
-    body.acess = document.getElementById("acess").value
-    body.password = document.getElementById("password").value
+    const body = {
+        acess: document.getElementById("acess").value,
+        password: document.getElementById("password").value
+    }
     try {
         const response = await fetch("/register/login", {
             method: "POST",
@@ -12,6 +13,7 @@ async function login() {
         })
         const result = await response.json()
         if (response.status !== 200) return alert(result.error)
+        socket.emit("setIdUserCipher", result._idCipher)
         window.location.href = result.urlRedirect
     }
     catch (err) {
