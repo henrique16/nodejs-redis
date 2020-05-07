@@ -1,78 +1,92 @@
 const connector = require("../connector")
 const mongodb = require("mongodb")
+const db = "base"
+const collection = "event"
 const schema = {
     idUser: null,
     idPlace: null,
-    eventName: null,
-    description: null
-}
-
-module.exports = {
-    insertOne(event) { return insertOne(event) },
-    get() { return get() },
-    getByUser(idUser) { return getByUser(idUser) },
-    del(_id) { return del(_id) }
+    name: null
 }
 
 function insertOne(event) {
     return new Promise(async (resolve, reject) => {
+        var mongoClient
         try {
-            const mongoClient = await connector
-            const collection = mongoClient.db("base").collection("event")
-            const result = await collection.insertOne(event)
+            mongoClient = await connector.getConnect()
+            const result = await mongoClient.db(db).collection(collection).insertOne(event)
             const insertedEvent = result.ops[0]
             return resolve(insertedEvent)
         }
-        catch (err) {
-            console.log(err)
-            return reject(err)
+        catch (error) {
+            console.log(error)
+            return reject(error)
+        }
+        finally {
+            if (mongoClient) mongoClient.close()
         }
     })
 }
 
 function del(_id) {
     return new Promise(async (resolve, reject) => {
+        var mongoClient
         try {
-            const mongoClient = await connector
-            const collection = mongoClient.db("base").collection("event")
-            const result = await collection.deleteOne({ _id: new mongodb.ObjectID(_id) })
+            mongoClient = await connector.getConnect()
+            const id = new mongodb.ObjectID(_id)
+            const result = await mongoClient.db(db).collection(collection).deleteOne({ _id: id })
             const deletedCount = result.deletedCount
             if (!deletedCount) return new Error(`_id: ${_id} NOT EXIST`)
             return resolve(deletedCount)
         }
-        catch (err) {
-            console.log(err)
-            return reject(err)
+        catch (error) {
+            console.log(error)
+            return reject(error)
+        }
+        finally {
+            if (mongoClient) mongoClient.close()
         }
     })
 }
 
 function get() {
     return new Promise(async (resolve, reject) => {
+        var mongoClient
         try {
-            const mongoClient = await connector
-            const collection = mongoClient.db("base").collection("event")
-            const events = await collection.find().limit(100).toArray()
+            mongoClient = await connector.getConnect()
+            const events = await mongoClient.db(db).collection(collection).find().limit(100).toArray()
             return resolve(events)
         }
         catch (err) {
             console.log(err)
             return reject(err)
         }
+        finally {
+            if (mongoClient) mongoClient.close()
+        }
     })
 }
 
 function getByUser(idUser) {
     return new Promise(async (resolve, reject) => {
+        var mongoClient
         try {
-            const mongoClient = await connector
-            const collection = mongoClient.db("base").collection("event")
-            const eventsByUser = await collection.find({idUser: idUser}).toArray()
+            mongoClient = await connector.getConnect()
+            const eventsByUser = await mongoClient.db(db).collection(collection).find({ idUser: idUser }).toArray()
             return resolve(eventsByUser)
         }
         catch (error) {
             console.log(error)
             return reject(error)
         }
+        finally {
+            if (mongoClient) mongoClient.close()
+        }
     })
+}
+
+module.exports = {
+    insertOne(event) { return insertOne(event) },
+    del(_id) { return del(_id) },
+    get() { return get() },
+    getByUser(idUser) { return getByUser(idUser) }
 }

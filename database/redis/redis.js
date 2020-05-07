@@ -1,12 +1,6 @@
 const { promisify } = require("util")
 const redis = require("redis")
 
-module.exports = {
-    set(key, array) { return set(key, array) },
-    get(key) { return get(key) },
-    del(key) { return del(key) }
-}
-
 function set(key, array) {
     return new Promise(async (resolve, reject) => {
         const redisClient = redis.createClient()
@@ -33,7 +27,7 @@ function del(key) {
         try {
             const delAsync = promisify(redisClient.del).bind(redisClient)
             const result = await delAsync(key)
-            if(!result) return new Error("key not found")
+            if (!result) return new Error("key not found")
             return resolve("OK")
         }
         catch (err) {
@@ -77,7 +71,6 @@ function expire(key, redisClient) {
             return resolve("OK")
         }
         catch (err) {
-            console.log(err)
             return reject(err)
         }
     })
@@ -91,8 +84,13 @@ function ttl(key, redisClient) {
             return resolve(result)
         }
         catch (err) {
-            console.log(err)
             return reject(err)
         }
     })
+}
+
+module.exports = {
+    set(key, array) { return set(key, array) },
+    del(key) { return del(key) },
+    get(key) { return get(key) }
 }

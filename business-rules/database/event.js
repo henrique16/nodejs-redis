@@ -1,27 +1,20 @@
-const schema = require("../schema/event")
-const redis = require("../../redis/redis")
+const schema = require("../../database/mongodb/schema/event")
+const redis = require("../../database/redis/redis")
 const redisKeys = { event: "event", events: "events" }
-
-module.exports = {
-    insertOne(event) { return insertOne(event) },
-    del({ _id, idUser }) { return del({ _id, idUser }) },
-    get() { return get() },
-    getByUser(idUser) { return getByUser(idUser) }
-}
 
 /**
  * @param {*} event  { idUser: null, idPlace: null, eventName: null, description: null }
  */
 // Insert in mongodb and if there is cache, update the cache
-async function insertOne(event) {
-    try {
-        const insertedEvent = await schema.insertOne(event)
-        console.log(`INSERTED EVENT _id: ${insertedEvent._id}`)
-        await insertInArrayCache(redisKeys.events, insertedEvent)
-        await insertInArrayCache(`${redisKeys.events}${insertedEvent.idUser}`, insertedEvent)
-        return insertedEvent
-    }
-    finally { }
+function insertOne(event) {
+    return schema.insertOne(event)
+        .then(insertedEvent => {
+            console.log(`INSERTED EVENT _id: ${insertedEvent._id}`)
+            insertInArrayCache(redisKeys.events, insertedEvent)
+            insertInArrayCache(`${redisKeys.events}${insertedEvent.idUser}`, insertedEvent)
+            return insertedEvent
+        })
+        .catch(error => error)
 }
 
 // Delete event on mongodb and if there is cache, update the cache
@@ -33,11 +26,13 @@ async function del({ _id, idUser }) {
         await deleteInArrayCache(`${redisKeys.events}${idUser}`, _id)
         return deletedCount
     }
-    finally { }
+    catch (error) {
+        return error
+    }
 }
 
- // 1- Tries to get all events in the cache, if it exists in the cache, retrieves the events
- // 2- If the events are not in the cache, get all the events from mongodb and insert them in the cache
+// 1- Tries to get all events in the cache, if it exists in the cache, retrieves the events
+// 2- If the events are not in the cache, get all the events from mongodb and insert them in the cache
 async function get() {
     try {
         const eventsCache = await getArrayCache(redisKeys.events)
@@ -51,7 +46,9 @@ async function get() {
         console.log("REDIS - INSERTED EVENTS IN CACHE")
         return events
     }
-    finally { }
+    catch (error) {
+        return error
+    }
 }
 
 // 1- Tries to get user events in the cache, if it exists in the cache, retrieves the user events
@@ -70,7 +67,9 @@ async function getByUser(idUser) {
         console.log(`REDIS - USER EVENT ${idUser} INSERTED IN CACHE`)
         return eventsByUser
     }
-    finally { }
+    catch (error) {
+        return error
+    }
 }
 
 /**
@@ -86,7 +85,9 @@ async function getArrayCache(key) {
         }
         return null
     }
-    finally { }
+    catch (error) {
+        return error
+    }
 }
 
 /**
@@ -104,7 +105,9 @@ async function insertInArrayCache(key, event) {
         }
         else console.log(`NOT ${key}`)
     }
-    finally { }
+    catch (error) {
+        return error
+    }
 }
 
 /**
@@ -123,5 +126,14 @@ async function deleteInArrayCache(key, _id) {
         }
         else console.log(`NOT ${key}`)
     }
-    finally { }
+    catch (error) {
+        return error
+    }
+}
+
+module.exports = {
+    insertOne(event) { return insertOne(event) },
+    del({ _id, idUser }) { return del({ _id, idUser }) },
+    get() { return get() },
+    getByUser(idUser) { return getByUser(idUser) }
 }

@@ -1,9 +1,24 @@
-const register = require("./register/register")
-const root = require("./root/root")
-const event = require("./event/event")
+const express = require("express")
 
-module.exports = function (app, io) {
-    register(app, io)
-    root(app, io)
-    event(app, io)
+function get() {
+    const route = express()
+    
+    route.use(async (req, res, next) => {
+    })
+
+    //#region root
+    route.get("/", async (req, res, next) => {
+    })
+    //#endregion
+
+    //#region register
+    route.get("/register", (req, res, next) => {
+    })
+    //#endregion
+
+    return route
+}
+
+module.exports = {
+    get() { return get() }
 }
